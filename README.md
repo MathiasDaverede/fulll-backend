@@ -65,3 +65,47 @@ bin/console fleet:create <userId>
 bin/console fleet:register-vehicle <fleetId> <vehiclePlateNumber>
 bin/console fleet:park-vehicle <fleetId> <vehiclePlateNumber> lat lng [alt]
 ```
+
+## Step 3
+
+Tools for code quality :
+
+- PHP CS Fixer
+  - Coding Style/Formatting : Auto-fixes code to comply with standards (e.g., PSR-12, Symfony), ensuring code base consistency.
+- PHPStan
+  - Static Analysis : Catches deep bugs and type-related errors without execution, significantly increasing code robustness and predictability.
+- PHPUnit
+  - Unit/Functional Testing : Verifies that individual components work in isolation, preventing technical regressions.
+- Behat
+  - Behavioral Testing (BDD) : Validates that the entire application meets the defined business requirements from the user's perspective.
+
+CI/CD process :
+
+The goal of the CI/CD pipeline is to ensure that every committed change is automatically tested and safely deployed.
+
+- Continuous Integration (CI)
+  - Setup & Dependencies :
+    - Build Docker service images and start the containers (web, database).
+    - Install dependencies (composer install).
+    - Prepare database.
+  - Static Checks :
+    - Run PHPStan.
+    - Run PHP CS Fixer(--dry-run).
+    - Run security check (symfony check:security).
+    - Run requirments check (symfony check:requirements).
+  - Testing & Validation :
+    - Prepare test database (--env=test).
+    - Execute PHPUnit.
+    - Execute Behat.
+  - Artifact Generation :
+    - If all checks pass, tag and push the final, production-ready Docker image (the Artifact) to a registry.
+- Continuous Deployment (CD)
+  - Environment Setup :
+    - Pull the validated Docker image from the registry to the Production server.
+  - Database Migration :
+    - Run Doctrine Migrations on the live Production database (--env=prod).
+  - Service Update :
+    - Deploy the new container image using a zero-downtime strategy (e.g., Rolling Update).
+  - Post-Deployment :
+    - Clear the Production cache (bin/console cache:clear --env=prod).
+    - Run final health checks to confirm the service is operational.
