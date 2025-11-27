@@ -1,5 +1,8 @@
 default:
     suites:
-        domain:
+        default:
             contexts:
-                - DomainContext
+                - App\Tests\Behat\FeatureContext
+    extensions:
+        FriendsOfBehat\SymfonyExtension:
+            bootstrap: tests/bootstrap.php

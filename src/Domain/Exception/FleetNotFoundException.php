@@ -1,11 +1,11 @@
 <?php
 
-namespace App\App\Exception;
+namespace Domain\Exception;
 
-use App\Domain\ValueObject\FleetId;
-use Exception;
+use Domain\ValueObject\FleetId;
+use DomainException;
 
-final class FleetNotFoundException extends Exception
+final class FleetNotFoundException  extends DomainException
 {
     public function __construct(private FleetId $fleetId)
     {

@@ -1,23 +1,27 @@
 <?php
 
-namespace App\App\Handler;
+namespace App\Handler;
 
-use App\App\Command\RegisterVehicleCommand;
-use App\Domain\Repository\FleetRepositoryInterface;
-use App\Domain\ValueObject\FleetId;
-use App\Domain\ValueObject\VehicleId;
+use App\Command\RegisterVehicleCommand;
+use Domain\Exception\FleetNotFoundException;
+use Domain\Repository\FleetRepositoryInterface;
+use Domain\ValueObject\FleetId;
+use Domain\ValueObject\VehiclePlate;
 
 final class RegisterVehicleHandler
 {
-    public function __construct(private FleetRepositoryInterface $repository) {}
+    public function __construct(private FleetRepositoryInterface $fleetRepository) {}
 
     public function __invoke(RegisterVehicleCommand $command): void
     {
-        $fleetId = new FleetId($command->getFleetId());
-        $vehicleId = new VehicleId($command->getVehiclePlateNumber());
+        $fleetId = FleetId::generate($command->getFleetId());
+        $fleet = $this->fleetRepository->findOneByFleetId($fleetId);
 
-        $fleet = $this->repository->find($fleetId);
-        $fleet->registerVehicle($vehicleId);
-        $this->repository->save($fleet);
+        if (is_null($fleet)) {
+            throw new FleetNotFoundException($fleetId);
+        }
+
+        $fleet->registerVehicle(new VehiclePlate($command->getVehiclePlate()));
+        $this->fleetRepository->save($fleet);
     }
 }

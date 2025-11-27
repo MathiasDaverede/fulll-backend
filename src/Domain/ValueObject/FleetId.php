@@ -1,10 +1,18 @@
 <?php
 
-namespace App\Domain\ValueObject;
+namespace Domain\ValueObject;
 
 final class FleetId
 {
-    public function __construct(private string $value) {}
+    private function __construct(private string $value) {}
+
+    public static function generate(?string $fleetId = null): self
+    {
+        if (is_null($fleetId)) {
+            $fleetId = 'fleet_' . uniqid();
+        }
+        return new self($fleetId);
+    }
 
     public function getValue(): string
     {
