@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Domain\Repository;
+namespace Domain\Repository;
 
-use App\Domain\Model\Fleet;
-use App\Domain\ValueObject\FleetId;
+use Domain\Model\Fleet;
+use Domain\ValueObject\FleetId;
+use Domain\ValueObject\UserId;
 
 interface FleetRepositoryInterface
 {
+    public function findOneByFleetId(FleetId $id): ?Fleet;
+    public function create(UserId $userId): Fleet;
     public function save(Fleet $fleet): void;
-    public function find(FleetId $id): ?Fleet;
 }

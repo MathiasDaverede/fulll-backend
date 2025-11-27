@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\ValueObject;
+namespace Domain\ValueObject;
 
 final class Location
 {

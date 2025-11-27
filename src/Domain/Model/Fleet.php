@@ -1,66 +1,83 @@
 <?php
 
-namespace App\Domain\Model;
+namespace Domain\Model;
 
-use App\App\Exception\VehicleAlreadyParkedException;
-use App\App\Exception\VehicleAlreadyRegisteredException;
-use App\App\Exception\VehicleNotRegisteredException;
-use App\Domain\ValueObject\FleetId;
-use App\Domain\ValueObject\Location;
-use App\Domain\ValueObject\VehicleId;
+use Domain\Exception\VehicleAlreadyParkedException;
+use Domain\Exception\VehicleAlreadyRegisteredException;
+use Domain\Exception\VehicleNotRegisteredException;
+use Domain\ValueObject\FleetId;
+use Domain\ValueObject\Location;
+use Domain\ValueObject\UserId;
+use Domain\ValueObject\VehiclePlate;
 
 class Fleet
 {
-    /** @var VehicleId[] */
-    private array $registeredVehicles = [];
+    /**
+     * @var array<string, ?Location> key: Plate, Value: Location (null if not parked)
+     */
+    private array $vehicles = [];
 
-    /** @var Location[] */
-    private array $vehicleLocations = [];
+    public function __construct(
+        private UserId $userId,
+        private FleetId $fleetId,
+    ) {}
 
-    public function __construct(private FleetId $fleetId) {}
+    public function getUserId(): UserId
+    {
+        return $this->userId;
+    }
 
     public function getFleetId(): FleetId
     {
         return $this->fleetId;
     }
 
-    public function registerVehicle(VehicleId $vehicleId): void
+    /**
+     * @return array<string, ?Location>
+     */
+    public function getVehicles(): array
     {
-        if ($this->isVehicleRegistered($vehicleId)) {
-            throw new VehicleAlreadyRegisteredException($this->fleetId, $vehicleId);
-        }
-
-        $this->registeredVehicles[] = $vehicleId;
+        return $this->vehicles;
     }
 
-    public function isVehicleRegistered(VehicleId $vehicleId): bool
+    public function getVehicleLocation(VehiclePlate $vehiclePlate): ?Location
     {
-        foreach ($this->registeredVehicles as $registeredId) {
-            if ($registeredId->equals($vehicleId)) {
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->vehicles[$vehiclePlate->getValue()];
     }
 
-    public function parkVehicle(VehicleId $vehicleId, Location $newLocation): void
+    public function isVehicleRegistered(VehiclePlate $vehiclePlate): bool
     {
-        if (!$this->isVehicleRegistered($vehicleId)) {
-            throw new VehicleNotRegisteredException($this->fleetId, $vehicleId);
-        }
-
-        $currentLocation = $this->vehicleLocations[$vehicleId->getValue()] ?? null;
-
-        if (!is_null($currentLocation) && $currentLocation->equals($newLocation)) {
-             throw new VehicleAlreadyParkedException($vehicleId);
-        }
-
-        $this->vehicleLocations[$vehicleId->getValue()] = $newLocation;
+        return array_key_exists($vehiclePlate->getValue(), $this->vehicles);
     }
 
-    public function getVehicleLocation(VehicleId $vehicleId): ?Location
+    public function setVehicles(array $vehicles): self
     {
-        return $this->vehicleLocations[$vehicleId->getValue()] ?? null;
+        $this->vehicles = $vehicles;
+
+        return $this;
+    }
+
+    public function registerVehicle(VehiclePlate $vehiclePlate): void
+    {
+        if ($this->isVehicleRegistered($vehiclePlate)) {
+            throw VehicleAlreadyRegisteredException::inFleet($this, $vehiclePlate);
+        }
+
+        $this->vehicles[$vehiclePlate->getValue()] = null;
+    }
+
+    public function parkVehicle(VehiclePlate $vehiclePlate, Location $location): void
+    {
+        if (!$this->isVehicleRegistered($vehiclePlate)) {
+            throw VehicleNotRegisteredException::inFleet($this, $vehiclePlate);
+        }
+
+        $oldLocation = $this->vehicles[$vehiclePlate->getValue()];
+
+        if (!is_null($oldLocation) && $oldLocation->equals($location)) {
+            throw VehicleAlreadyParkedException::atLocation($vehiclePlate, $location);
+        }
+
+        $this->vehicles[$vehiclePlate->getValue()] = $location;
     }
 }

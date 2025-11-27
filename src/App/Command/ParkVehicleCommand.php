@@ -1,12 +1,12 @@
 <?php
 
-namespace App\App\Command;
+namespace App\Command;
 
 final class ParkVehicleCommand
 {
     public function __construct(
         private string $fleetId,
-        private string $vehiclePlateNumber,
+        private string $vehiclePlate,
         private float $latitude,
         private float $longitude,
         private ?float $altitude = null
@@ -17,9 +17,9 @@ final class ParkVehicleCommand
         return $this->fleetId;
     }
 
-    public function getVehiclePlateNumber(): string
+    public function getVehiclePlate(): string
     {
-        return $this->vehiclePlateNumber;
+        return $this->vehiclePlate;
     }
 
     public function getLatitude(): float

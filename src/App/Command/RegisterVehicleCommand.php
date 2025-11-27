@@ -1,12 +1,12 @@
 <?php
 
-namespace App\App\Command;
+namespace App\Command;
 
 final class RegisterVehicleCommand
 {
     public function __construct(
         private string $fleetId,
-        private string $vehiclePlateNumber
+        private string $vehiclePlate
     ) {}
 
     public function getFleetId(): string
@@ -14,8 +14,8 @@ final class RegisterVehicleCommand
         return $this->fleetId;
     }
 
-    public function getVehiclePlateNumber(): string
+    public function getVehiclePlate(): string
     {
-        return $this->vehiclePlateNumber;
+        return $this->vehiclePlate;
     }
 }
